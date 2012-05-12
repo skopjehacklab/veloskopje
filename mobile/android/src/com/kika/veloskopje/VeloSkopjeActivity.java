@@ -157,15 +157,4 @@ public class VeloSkopjeActivity extends Activity {
 	}
 	
 
-	//	private void sendMail(File attachment) {
-	//		try {   
-	//	         GMailSender sender = new GMailSender("abalalovski@gmail.com", "108a359242");
-	////	         sender.sendImage("Hi Ufo", "Zdravo, eve eden so parkira nerazumno.", "pero@antich.gr", "abalalovski@gmail.com", attachment);
-	//	         sender.sendMail("Hi Ufo", "Zdravo, eve eden so parkira nerazumno.", "pero@antich.gr", "ufo@linux.net.mk");
-	//	     } catch (Exception e) {   
-	//	         Log.e("SendMail", e.getMessage(), e);   
-	//	     } 
-	//	}
-
-
 }
