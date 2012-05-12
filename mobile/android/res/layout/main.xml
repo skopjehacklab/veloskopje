@@ -16,6 +16,42 @@
         android:layout_gravity="bottom|center"
         android:layout_margin="10dp"
         android:onClick="onShoot"
-        android:text="Shoot" />
+        android:text="onButtonClicked" />
+
+    <LinearLayout
+        android:id="@+id/after_shot_buttons_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:orientation="horizontal"
+        android:visibility="gone" >
+
+        <Button
+            android:id="@+id/send_to_mail_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:layout_margin="10dp"
+            android:onClick="onButtonClicked"
+            android:text="Send to mail" />
+
+        <Button
+            android:id="@+id/upload_to_server_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:layout_margin="10dp"
+            android:onClick="onButtonClicked"
+            android:text="Upload to server" />
+
+        <Button
+            android:id="@+id/discard_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:layout_margin="10dp"
+            android:onClick="onButtonClicked"
+            android:text="Discard" />
+    </LinearLayout>
 
 </FrameLayout>

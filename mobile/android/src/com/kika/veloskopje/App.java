@@ -10,7 +10,7 @@ public class App extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		
+
 		String appPath = String.format("%s/%s", Environment.getExternalStorageDirectory(), "VeloSkopje");
 
 		File appFolder = new File(appPath);
