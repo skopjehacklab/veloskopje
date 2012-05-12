@@ -13,7 +13,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.kika.veloskopje.OnPhotoShotListener;
+import com.kika.veloskopje.listeners.OnPhotoShotListener;
 import com.kika.veloskopje.utils.Constants;
 
 public class CameraView extends ViewGroup implements SurfaceHolder.Callback {
@@ -166,14 +166,11 @@ public class CameraView extends ViewGroup implements SurfaceHolder.Callback {
 	public void releaseCamera() {
 		if (mCamera != null) {
 			setCamera(null);
-			mCamera.release();
-			mCamera = null;
 		}
 	}
 
 	public void shoot() {
 		mCamera.takePicture(null, mPictureCallback, mPictureCallback);
-
 	}
 
 	Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {

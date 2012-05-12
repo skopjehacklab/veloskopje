@@ -14,8 +14,12 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
+        public static final int after_shot_buttons_layout=0x7f050002;
         public static final int camera_view=0x7f050000;
+        public static final int discard_button=0x7f050005;
+        public static final int send_to_mail_button=0x7f050003;
         public static final int shoot_button=0x7f050001;
+        public static final int upload_to_server_button=0x7f050004;
     }
     public static final class layout {
         public static final int main=0x7f030000;
