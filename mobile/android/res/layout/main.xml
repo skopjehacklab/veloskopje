@@ -11,12 +11,11 @@
 
     <Button
         android:id="@+id/shoot_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:layout_margin="10dp"
-        android:onClick="onShoot"
-        android:text="onButtonClicked" />
+        style="@style/VeloButtonStyle"
+        android:drawableTop="@drawable/camera"
+        android:layout_gravity="right|center"
+        android:onClick="onButtonClicked"
+        android:text="Сликај" />
 
     <LinearLayout
         android:id="@+id/after_shot_buttons_layout"
@@ -28,30 +27,24 @@
 
         <Button
             android:id="@+id/send_to_mail_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center"
-            android:layout_margin="10dp"
+            style="@style/VeloButtonStyle"
+            android:drawableTop="@drawable/agent"
             android:onClick="onButtonClicked"
-            android:text="Send to mail" />
+            android:text="Испрати до МВР" />
 
         <Button
             android:id="@+id/upload_to_server_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center"
-            android:layout_margin="10dp"
+            style="@style/VeloButtonStyle"
+            android:drawableTop="@drawable/emblem_web"
             android:onClick="onButtonClicked"
-            android:text="Upload to server" />
+            android:text="Објави онлајн" />
 
         <Button
             android:id="@+id/discard_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center"
-            android:layout_margin="10dp"
+            style="@style/VeloButtonStyle"
+            android:drawableTop="@drawable/close"
             android:onClick="onButtonClicked"
-            android:text="Discard" />
+            android:text="Откажи" />
     </LinearLayout>
 
 </FrameLayout>

@@ -24,6 +24,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activities.EMailReportActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.WebReportActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>
