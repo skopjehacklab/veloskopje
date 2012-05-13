@@ -54,6 +54,7 @@ public class CameraView extends ViewGroup implements SurfaceHolder.Callback {
 		}
 		Camera.Parameters parameters = camera.getParameters();
 		parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
+		
 		requestLayout();
 
 		camera.setParameters(parameters);
@@ -117,7 +118,6 @@ public class CameraView extends ViewGroup implements SurfaceHolder.Callback {
 		}
 	}
 
-
 	private Size getOptimalPreviewSize(List<Size> sizes, int w, int h) {
 		final double ASPECT_TOLERANCE = 0.1;
 		double targetRatio = (double) w / h;
@@ -152,6 +152,8 @@ public class CameraView extends ViewGroup implements SurfaceHolder.Callback {
 	public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
 		Camera.Parameters parameters = mCamera.getParameters();
 		parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
+		List<Size> sizes = parameters.getSupportedPictureSizes();
+		parameters.setPictureSize(sizes.get(2).width, sizes.get(2).height);
 		requestLayout();
 
 		mCamera.setParameters(parameters);
@@ -165,6 +167,7 @@ public class CameraView extends ViewGroup implements SurfaceHolder.Callback {
 
 	public void releaseCamera() {
 		if (mCamera != null) {
+			mCamera.release();
 			setCamera(null);
 		}
 	}
