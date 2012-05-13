@@ -173,7 +173,7 @@ public class CameraView extends ViewGroup implements SurfaceHolder.Callback {
 	}
 
 	public void shoot() {
-		mCamera.takePicture(null, mPictureCallback, mPictureCallback);
+		mCamera.takePicture(null, null, mPictureCallback);
 	}
 
 	Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {

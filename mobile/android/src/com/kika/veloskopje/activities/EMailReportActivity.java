@@ -3,12 +3,16 @@ package com.kika.veloskopje.activities;
 import java.io.File;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.kika.veloskopje.R;
 import com.kika.veloskopje.mail.GMailSender;
@@ -20,6 +24,8 @@ public class EMailReportActivity extends Activity {
 	private ImageView mPhotoImageView;
 	private Button mSendButton;
 	private Button mDiscardButton;
+	
+	private EditText mInfoEditText;
 
 	private String mPhotoFileUri;
 
@@ -39,6 +45,8 @@ public class EMailReportActivity extends Activity {
 		
 		mSendButton = (Button) findViewById(R.id.send_button);
 		mDiscardButton = (Button) findViewById(R.id.discard_button);
+		
+		mInfoEditText = (EditText) findViewById(R.id.info_edittext);
 
 		mSendButton.setOnClickListener(mButtonClickListener);
 		mDiscardButton.setOnClickListener(mButtonClickListener);
@@ -60,7 +68,8 @@ public class EMailReportActivity extends Activity {
 		public void onClick(View v) {
 			switch(v.getId()) {
 			case R.id.send_button:
-				send("Lokacija ova ona");
+				String geoLoc = "http://maps.openstreetmaps.org";
+				send(String.format("Граѓанин ја испрати сликата во атачмент со следнава порака:\n\n%s\n\nГеолокација: %s", mInfoEditText.getText().toString(), geoLoc));
 				break;
 			case R.id.discard_button:
 				finish();
@@ -69,14 +78,36 @@ public class EMailReportActivity extends Activity {
 		}
 	};
 
-	private void send(String message) {
-		try {  
-			File attachment = new File(mPhotoFileUri);
-			GMailSender sender = new GMailSender(Constants.MAIL_USERNAME, Constants.MAIL_PASSWORD);
-			sender.sendImage("S.O.S.", message, "mailer@deamon.org", Constants.MAIL_RECEPIENT, attachment);
-		} catch (Exception e) {   
-			Log.e(Constants.TAG, e.getMessage(), e);   
-		}
+	private void send(final String message) {
+		
+		final ProgressDialog pD = ProgressDialog.show(this, "Пачекајте", "Податоците се испраќаат...");
+		new AsyncTask<Void, Void, Boolean>() {
+
+			@Override
+			protected Boolean doInBackground(Void... arg0) {
+				try {  
+					File attachment = new File(mPhotoFileUri);
+					GMailSender sender = new GMailSender(Constants.MAIL_USERNAME, Constants.MAIL_PASSWORD);
+					sender.sendImage("S.O.S.", message, "mailer@deamon.org", Constants.MAIL_RECEPIENT, attachment);
+					return true;
+				} catch (Exception e) { 
+					Log.e(Constants.TAG, e.getMessage(), e);
+					return false;
+				}
+			}
+			
+			@Override
+			public void onPostExecute(Boolean result) {
+				String statusMsg = "Се случи грешка при испраќањето. Обидете се повторно."; 
+				if(result) {
+					statusMsg = "Вашата слика е успешно испратена.";
+				}
+				
+				Toast.makeText(EMailReportActivity.this, statusMsg, Toast.LENGTH_LONG).show();
+				pD.dismiss();
+				finish();
+			}
+		}.execute();
 	}
 	
 }
