@@ -1,6 +1,5 @@
 package com.kika.veloskopje.activities;
 
-import helpers.EasySSLSocketFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
@@ -42,6 +41,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kika.veloskopje.R;
+import com.kika.veloskopje.helpers.EasySSLSocketFactory;
 import com.kika.veloskopje.utils.Constants;
 import com.kika.veloskopje.utils.Utils;
 
@@ -96,58 +96,6 @@ public class WebReportActivity extends Activity {
 		super.onResume();
 	}
 
-//	private void publish() {
-//
-//		new AsyncTask<Void, Void, Boolean>() {
-//
-//			@Override
-//			protected Boolean doInBackground(Void... arg0) {
-//				HttpClient client = new DefaultHttpClient();
-//				HttpConnectionParams.setConnectionTimeout(client.getParams(), 300000);
-//
-//				HttpResponse response;
-//				JSONObject json = new JSONObject();
-//				try {
-//					HttpPost httpPost = new HttpPost(Constants.WEB_REPORT_URL);
-//					String imgBase64 = Base64.encodeToString(Utils.getImageAsByteArray(mPhotoFileUri), Base64.DEFAULT);
-//
-//
-//					httpPost.setHeader("json", json.toString());
-//					StringEntity se = new StringEntity(json.toString());
-//					se.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-//					httpPost.setEntity(se);
-//
-//					httpPost.addHeader("Content-Type", "application/json");
-//					response = client.execute(httpPost);
-//
-//					if (response != null) {
-//						InputStream in = response.getEntity().getContent(); 
-//						String a = Utils.convertStreamToString(in);
-//						Log.i(Constants.TAG, a);
-//					}
-//
-//					return true;
-//
-//				} catch (Exception e) {
-//					Log.e(Constants.TAG, "Exception", e);
-//					return false;
-//				}
-//			}
-//
-//			@Override
-//			public void onPostExecute(Boolean result) {
-//				String statusMsg = "Се случи грешка при испраќањето. Обидете се повторно."; 
-//				if(result) {
-//					statusMsg = "Вашата слика е успешно испратена.";
-//					finish();
-//				}
-//
-//				Toast.makeText(WebReportActivity.this, statusMsg, Toast.LENGTH_LONG).show();
-//				pD.dismiss();
-//			}
-//		}.execute();
-//	}
-
 	public void publish() {
 		final ProgressDialog pD = ProgressDialog.show(this, "Пачекајте", "Податоците се испраќаат...");
 
@@ -158,11 +106,12 @@ public class WebReportActivity extends Activity {
 				HttpPost request = new HttpPost(Constants.WEB_REPORT_URL);
 				String imgBase64 = Base64.encodeToString(Utils.getImageAsByteArray(mPhotoFileUri), Base64.DEFAULT);
 
+				String comment = "" + mInfoEditText.getText().toString();
 				JSONStringer json = null;
 				try {
 					json = new JSONStringer()
 					.object()
-					.key("comment").value("test")
+					.key("comment").value(comment)
 					.key("image").value(imgBase64)
 					.key("lat").value("42.60")
 					.key("lon").value("22.3")
