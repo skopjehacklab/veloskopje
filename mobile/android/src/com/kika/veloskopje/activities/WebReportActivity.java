@@ -6,30 +6,24 @@ import java.text.DateFormat;
 import java.util.Date;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.params.ConnManagerPNames;
-import org.apache.http.conn.params.ConnPerRouteBean;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONException;
 import org.json.JSONStringer;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.Base64;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,7 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kika.veloskopje.R;
-import com.kika.veloskopje.helpers.EasySSLSocketFactory;
+import com.kika.veloskopje.helpers.HttpUtils;
 import com.kika.veloskopje.utils.Constants;
 import com.kika.veloskopje.utils.Utils;
 
@@ -57,6 +51,10 @@ public class WebReportActivity extends Activity {
 	private EditText mInfoEditText;
 
 	private String mPhotoFileUri;
+
+	LocationManager mLocationManager;
+	protected double mLat;
+	protected double mLon;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +82,16 @@ public class WebReportActivity extends Activity {
 		mDiscardButton.setOnClickListener(mButtonClickListener);
 
 		mTimeTextview.setText(getTime());
+		
+		mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+		Criteria criteria = new Criteria();
+		criteria.setAccuracy(Criteria.ACCURACY_FINE);
+		Criteria coarse = new Criteria();
+		coarse.setAccuracy(Criteria.ACCURACY_COARSE);
+
+		String bestProvider = mLocationManager.getBestProvider(criteria, true);
+		mLocationManager.requestLocationUpdates(bestProvider, 0, 0, mLocationListener);
 	}
 
 	@Override
@@ -129,36 +137,28 @@ public class WebReportActivity extends Activity {
 				}
 				entity.setContentType("application/json;charset=UTF-8");
 				entity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json;charset=UTF-8"));
-				request.setEntity(entity); 
+				entity.setContentEncoding(new BasicHeader(HTTP.CONTENT_LEN, String.valueOf(json.toString().length())));
 
-				SchemeRegistry schemeRegistry = new SchemeRegistry();
-				schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-				schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
-				 
-				HttpParams httpParams = new BasicHttpParams();
-				httpParams.setParameter(ConnManagerPNames.MAX_TOTAL_CONNECTIONS, 30);
-				httpParams.setParameter(ConnManagerPNames.MAX_CONNECTIONS_PER_ROUTE, new ConnPerRouteBean(30));
-				httpParams.setParameter(HttpProtocolParams.USE_EXPECT_CONTINUE, false);
-				HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
-				 
-				ClientConnectionManager cm = new SingleClientConnManager(httpParams, schemeRegistry);
-				HttpClient httpClient = new DefaultHttpClient(cm, httpParams);
-				
+				request.setHeader("Content-Range", "10" + Integer.valueOf(json.toString().length()-1));
+				request.setHeader("Accept-Ranges", "bytes");
+
+				request.setEntity(entity);
+
 				HttpResponse response = null;
 				try {
-					response = httpClient.execute(request);
+					response = HttpUtils.getNewHttpClient().execute(request);
 				} catch (Exception e) {
 					e.printStackTrace();
 				} 
-				 
+
 				return null;
 			}
-			
+
 			@Override
 			public void onPostExecute(Void result) {
 				pD.dismiss();
 			}
-			
+
 		}.execute();
 	}
 
@@ -185,4 +185,22 @@ public class WebReportActivity extends Activity {
 	private String getTime() {
 		return DateFormat.getDateTimeInstance().format(new Date());
 	}
+
+	LocationListener mLocationListener = new LocationListener() {
+		public void onLocationChanged(Location location) {
+			mLat = location.getLatitude();
+			mLon = location.getLongitude();
+			
+			String openStreetMapUrl = String.format("http://www.openstreetmap.org/?lat=%f&lon=%f&zoom=15&layers=B000FTF", mLat, mLon);
+			mLocationTextview.setText(openStreetMapUrl);
+			Linkify.addLinks(mLocationTextview, Linkify.ALL);
+			mLocationTextview.setMovementMethod(LinkMovementMethod.getInstance());
+		}
+
+		public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+		public void onProviderEnabled(String provider) {}
+
+		public void onProviderDisabled(String provider) {}
+	};
 }

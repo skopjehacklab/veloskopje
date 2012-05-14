@@ -16,5 +16,12 @@
         <item name="android:shadowDx">1</item>
         <item name="android:shadowDy">2</item>
     </style>
-    
+
+    <style name="Header">
+        <item name="android:id">@+id/title_container</item>
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">55dp</item>
+        <item name="android:background">@drawable/header</item>
+    </style>
+
 </resources>
