@@ -1,10 +1,12 @@
 package com.kika.veloskopje.activities;
 
+import static com.kika.veloskopje.utils.Constants.Buttons.REPORT;
+import static com.kika.veloskopje.utils.Constants.Buttons.SHOOT;
+
 import java.util.UUID;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,14 +20,12 @@ import android.widget.LinearLayout;
 import com.kika.veloskopje.R;
 import com.kika.veloskopje.camera.CameraView;
 import com.kika.veloskopje.listeners.OnPhotoShotListener;
+import com.kika.veloskopje.utils.Constants;
 import com.kika.veloskopje.utils.Utils;
 
 public class MainActivity extends Activity {
 
 	private CameraView mPreview;
-	Camera mCamera;
-	int cameraCurrentlyLocked;
-
 	private String mPhotoFileUri;
 
 	@Override
@@ -37,17 +37,6 @@ public class MainActivity extends Activity {
 
 		setContentView(R.layout.main);
 
-		mPreview = (CameraView) findViewById(R.id.camera_view);
-		mPreview.setOnPhotoShotListener(new OnPhotoShotListener() {
-			@Override
-			public void onPhotoShot(byte[] imageData) {
-				mPhotoFileUri = String.format("%s/%s/%s.jpg", Environment.getExternalStorageDirectory(), "VeloSkopje", UUID.randomUUID());
-				Utils.saveFile(imageData, mPhotoFileUri);
-				switchButtons();
-				mPreview.releaseCamera();
-			}
-		});
-		
 		if(Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
 			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 			StrictMode.setThreadPolicy(policy);
@@ -63,45 +52,7 @@ public class MainActivity extends Activity {
 		//			}
 		//		}
 
-		//		URI uri = null;
-		//		try {
-		//			uri = new URI("file:///android_asset/img.png");
-		//		} catch (URISyntaxException e) {
-		//			e.printStackTrace();
-		//		}
-		//		
-		//		File f = null;
-		//		if(uri!=null)  {
-		//			f = new File(uri);
-		//		}
-
-		//		sendMail(f);
-
-		//		File attachmentFile = new File(attachmentInputStream);
 	}
-
-	//	public static Bitmap makeBitmap(byte[] imgData) throws IOException {
-	//		File tmpDir = new File(String.format("%s/%s", Environment.getExternalStorageDirectory(), "VeloSkopje"));
-	//		
-	//		File tmpFile = new File(tmpDir + "/shot.png");
-	//
-	//		if(!tmpDir.exists()) {
-	//			tmpDir.mkdirs();
-	//		}
-	//
-	//		FileOutputStream out = new FileOutputStream(tmpFile);
-	//		out.write(imgData, 0, imgData.length);
-	//		out.flush();
-	//		out.close();
-	//
-	//		imgData = null;
-	//
-	//		SoftReference<Bitmap> bm = new SoftReference<Bitmap>(getBitmapFromFilePure(tmpFile));
-	//		tmpFile.delete();
-	//		tmpDir.delete();
-	//
-	//		return bm.get();
-	//	}
 
 	@Override
 	public void onPause() {
@@ -110,11 +61,27 @@ public class MainActivity extends Activity {
 		mPreview.releaseCamera();
 	}
 	
+	private void initCameraView() {
+		mPreview = (CameraView) findViewById(R.id.camera_view);
+		mPreview.setOnPhotoShotListener(new OnPhotoShotListener() {
+			@Override
+			public void onPhotoShot(byte[] imageData) {
+				mPhotoFileUri = String.format("%s/%s/%s.jpg", Environment.getExternalStorageDirectory(), "VeloSkopje", UUID.randomUUID());
+				Utils.saveFile(imageData, mPhotoFileUri);
+				showButtons(REPORT);
+				mPreview.releaseCamera();
+			}
+		});
+		
+		showButtons(SHOOT);
+		mPreview.initCamera();
+	}
+	
 	@Override
 	public void onResume() {
 		super.onResume();
 
-		mPreview.initCamera();
+		initCameraView();
 	}
 
 	public void onButtonClicked(View v) {
@@ -147,24 +114,27 @@ public class MainActivity extends Activity {
 	}
 
 	private void discard() {
+		mPreview.releaseCamera();
+		mPreview = null;
 		Utils.deleteFile(mPhotoFileUri);
-		switchButtons();
-		mPreview.initCamera();
+		showButtons(SHOOT);
+		initCameraView();
 	}
 	
-	private void switchButtons() {
+	private void showButtons(Constants.Buttons buttons) {
 		// temporary impl. just to test
 		LinearLayout afterShotButtonsLayout = (LinearLayout) findViewById(R.id.after_shot_buttons_layout);
 		Button shootButton = (Button) findViewById(R.id.shoot_button);
 		
-		int vis = afterShotButtonsLayout.getVisibility();
-		if(vis==View.GONE) {
-			afterShotButtonsLayout.setVisibility(View.VISIBLE);
-			shootButton.setVisibility(View.GONE);
-		}
-		else if(vis==View.VISIBLE) {
+		switch(buttons) {
+		case SHOOT:
 			afterShotButtonsLayout.setVisibility(View.GONE);
 			shootButton.setVisibility(View.VISIBLE);
+			break;
+		case REPORT:
+			afterShotButtonsLayout.setVisibility(View.VISIBLE);
+			shootButton.setVisibility(View.GONE);
+			break;
 		}
 	}
 

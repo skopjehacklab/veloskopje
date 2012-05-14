@@ -10,8 +10,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 public class Utils {
 	
@@ -96,6 +99,13 @@ public class Utils {
 	        }
 	    }
 	    return sb.toString();
+	}
+	
+	public static boolean isOnline(Context c) {
+	    ConnectivityManager cm = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo netInfo = cm.getActiveNetworkInfo();
+	    
+	    return (netInfo != null && netInfo.isConnectedOrConnecting());
 	}
 	
 

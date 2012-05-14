@@ -1,30 +1,45 @@
 package com.kika.veloskopje.activities;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import helpers.EasySSLSocketFactory;
+
+import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.util.Date;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.params.ConnManagerPNames;
+import org.apache.http.conn.params.ConnPerRouteBean;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
-import org.json.JSONObject;
+import org.json.JSONException;
+import org.json.JSONStringer;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
+import android.util.Base64;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kika.veloskopje.R;
 import com.kika.veloskopje.utils.Constants;
@@ -38,13 +53,16 @@ public class WebReportActivity extends Activity {
 
 	private TextView mLocationTextview;
 	private TextView mTimeTextview;
-	
+
+	private EditText mInfoEditText;
+
 	private String mPhotoFileUri;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+
 		setContentView(R.layout.web_report_layout);
 
 		mPhotoImageView = (ImageView) findViewById(R.id.photo_imageview);
@@ -54,18 +72,18 @@ public class WebReportActivity extends Activity {
 			mPhotoFileUri = bundle.getString("photoUri");
 			mPhotoImageView.setImageBitmap(Utils.getBitmapFromFile(mPhotoFileUri));
 		}
-		
+
 		mSendButton = (Button) findViewById(R.id.send_button);
 		mDiscardButton = (Button) findViewById(R.id.discard_button);
-		
+
 		mLocationTextview = (TextView) findViewById(R.id.location_textview);
 		mTimeTextview = (TextView) findViewById(R.id.time_textview);
-		
+		mInfoEditText = (EditText) findViewById(R.id.info_edittext); 
+
 		mSendButton.setOnClickListener(mButtonClickListener);
 		mDiscardButton.setOnClickListener(mButtonClickListener);
-		
+
 		mTimeTextview.setText(getTime());
-		
 	}
 
 	@Override
@@ -77,48 +95,136 @@ public class WebReportActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 	}
-	
-	private void publish() {
-		HttpClient client = new DefaultHttpClient();
-	    HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); // Timeout
-	                                                                            // Limit
-	    HttpResponse response;
-	    JSONObject json = new JSONObject();
-	    try {
-	        HttpPost post = new HttpPost(Constants.WEB_REPORT_URL);
-	        json.put("image", Utils.getImageAsByteArray(mPhotoFileUri));
-	        json.put("comment", "kaj si be per");
-	        json.put("lat", "42.96");
-	        json.put("lon", "22.10");
-	        json.put("timestamp", System.currentTimeMillis());
-	        
-	        post.setHeader("json", json.toString());
-	        StringEntity se = new StringEntity(json.toString());
-	        se.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-	        post.setEntity(se);
-	        
-	        post.addHeader("Content-Type", "application/json");
-	        response = client.execute(post);
-	        
-	        if (response != null) {
-	            InputStream in = response.getEntity().getContent(); 
-	            String a = Utils.convertStreamToString(in);
-	            Log.i(Constants.TAG, a);
-	        }
-	    } catch (Exception e) {
-            Log.e(Constants.TAG, "Exception", e);
-	    }
+
+//	private void publish() {
+//
+//		new AsyncTask<Void, Void, Boolean>() {
+//
+//			@Override
+//			protected Boolean doInBackground(Void... arg0) {
+//				HttpClient client = new DefaultHttpClient();
+//				HttpConnectionParams.setConnectionTimeout(client.getParams(), 300000);
+//
+//				HttpResponse response;
+//				JSONObject json = new JSONObject();
+//				try {
+//					HttpPost httpPost = new HttpPost(Constants.WEB_REPORT_URL);
+//					String imgBase64 = Base64.encodeToString(Utils.getImageAsByteArray(mPhotoFileUri), Base64.DEFAULT);
+//
+//
+//					httpPost.setHeader("json", json.toString());
+//					StringEntity se = new StringEntity(json.toString());
+//					se.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+//					httpPost.setEntity(se);
+//
+//					httpPost.addHeader("Content-Type", "application/json");
+//					response = client.execute(httpPost);
+//
+//					if (response != null) {
+//						InputStream in = response.getEntity().getContent(); 
+//						String a = Utils.convertStreamToString(in);
+//						Log.i(Constants.TAG, a);
+//					}
+//
+//					return true;
+//
+//				} catch (Exception e) {
+//					Log.e(Constants.TAG, "Exception", e);
+//					return false;
+//				}
+//			}
+//
+//			@Override
+//			public void onPostExecute(Boolean result) {
+//				String statusMsg = "Се случи грешка при испраќањето. Обидете се повторно."; 
+//				if(result) {
+//					statusMsg = "Вашата слика е успешно испратена.";
+//					finish();
+//				}
+//
+//				Toast.makeText(WebReportActivity.this, statusMsg, Toast.LENGTH_LONG).show();
+//				pD.dismiss();
+//			}
+//		}.execute();
+//	}
+
+	public void publish() {
+		final ProgressDialog pD = ProgressDialog.show(this, "Пачекајте", "Податоците се испраќаат...");
+
+		new AsyncTask<Void, Void, Void>() {
+
+			@Override
+			protected Void doInBackground(Void... params) {
+				HttpPost request = new HttpPost(Constants.WEB_REPORT_URL);
+				String imgBase64 = Base64.encodeToString(Utils.getImageAsByteArray(mPhotoFileUri), Base64.DEFAULT);
+
+				JSONStringer json = null;
+				try {
+					json = new JSONStringer()
+					.object()
+					.key("comment").value("test")
+					.key("image").value(imgBase64)
+					.key("lat").value("42.60")
+					.key("lon").value("22.3")
+					.key("timestamp").value(System.currentTimeMillis())
+					.endObject();
+				} catch (JSONException e2) {
+					e2.printStackTrace();
+				}
+
+				StringEntity entity = null;
+				try {
+					entity = new StringEntity(json.toString());
+				} catch (UnsupportedEncodingException e1) {
+					e1.printStackTrace();
+				}
+				entity.setContentType("application/json;charset=UTF-8");
+				entity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json;charset=UTF-8"));
+				request.setEntity(entity); 
+
+				SchemeRegistry schemeRegistry = new SchemeRegistry();
+				schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+				schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
+				 
+				HttpParams httpParams = new BasicHttpParams();
+				httpParams.setParameter(ConnManagerPNames.MAX_TOTAL_CONNECTIONS, 30);
+				httpParams.setParameter(ConnManagerPNames.MAX_CONNECTIONS_PER_ROUTE, new ConnPerRouteBean(30));
+				httpParams.setParameter(HttpProtocolParams.USE_EXPECT_CONTINUE, false);
+				HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
+				 
+				ClientConnectionManager cm = new SingleClientConnManager(httpParams, schemeRegistry);
+				HttpClient httpClient = new DefaultHttpClient(cm, httpParams);
+				
+				HttpResponse response = null;
+				try {
+					response = httpClient.execute(request);
+				} catch (Exception e) {
+					e.printStackTrace();
+				} 
+				 
+				return null;
+			}
+			
+			@Override
+			public void onPostExecute(Void result) {
+				pD.dismiss();
+			}
+			
+		}.execute();
 	}
-	
-	
-	
+
 	private OnClickListener mButtonClickListener = new OnClickListener() {
 
 		@Override
 		public void onClick(View v) {
 			switch(v.getId()) {
 			case R.id.send_button:
-				publish();
+				if(Utils.isOnline(WebReportActivity.this)) {
+					publish();
+				}
+				else {
+					Toast.makeText(WebReportActivity.this, "Нема активна конекција", Toast.LENGTH_LONG).show();
+				}
 				break;
 			case R.id.discard_button:
 				finish();
@@ -126,12 +232,8 @@ public class WebReportActivity extends Activity {
 			}
 		}
 	};
-	
+
 	private String getTime() {
 		return DateFormat.getDateTimeInstance().format(new Date());
 	}
-	
-	
-
-
 }

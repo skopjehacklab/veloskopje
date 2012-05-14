@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
@@ -32,6 +33,7 @@ public class EMailReportActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 		setContentView(R.layout.email_report_layout);
 
@@ -69,7 +71,12 @@ public class EMailReportActivity extends Activity {
 			switch(v.getId()) {
 			case R.id.send_button:
 				String geoLoc = "http://maps.openstreetmaps.org";
-				send(String.format("Граѓанин ја испрати сликата во атачмент со следнава порака:\n\n%s\n\nГеолокација: %s", mInfoEditText.getText().toString(), geoLoc));
+				if(Utils.isOnline(EMailReportActivity.this)) {
+					send(String.format("Граѓанин ја испрати сликата во атачмент со следнава порака:\n\n%s\n\nГеолокација: %s", mInfoEditText.getText().toString(), geoLoc));
+				}
+				else {
+					Toast.makeText(EMailReportActivity.this, "Нема активна конекција", Toast.LENGTH_LONG).show();
+				}
 				break;
 			case R.id.discard_button:
 				finish();
@@ -101,11 +108,11 @@ public class EMailReportActivity extends Activity {
 				String statusMsg = "Се случи грешка при испраќањето. Обидете се повторно."; 
 				if(result) {
 					statusMsg = "Вашата слика е успешно испратена.";
+					finish();
 				}
 				
 				Toast.makeText(EMailReportActivity.this, statusMsg, Toast.LENGTH_LONG).show();
 				pD.dismiss();
-				finish();
 			}
 		}.execute();
 	}
