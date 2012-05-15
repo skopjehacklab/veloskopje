@@ -13,7 +13,7 @@
         android:id="@+id/shoot_button"
         style="@style/VeloButtonStyle"
         android:drawableTop="@drawable/camera"
-        android:layout_gravity="right|center"
+        android:layout_gravity="bottom|center"
         android:onClick="onButtonClicked"
         android:text="Сликај" />
 
