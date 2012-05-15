@@ -15,7 +15,6 @@ function (newDoc, oldDoc, userCtx) {
   };
 
   if(!isAdmin()){
-    unchanged("image");
     unchanged("comment");
     unchanged("latitude");
     unchanged("longitude");
@@ -23,7 +22,6 @@ function (newDoc, oldDoc, userCtx) {
   }
 
   if (newDoc) {
-    require("image");
     require("comment");
     require("latitude");
     require("longitude");

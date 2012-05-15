@@ -3,20 +3,36 @@ body {
   padding: 0;
   font-family: sans-serif;
   font-size: 0.9em;
+  background: url(../images/asfalt.jpg);
 }
 img {
   max-width: 600px;
   margin: 0;
 }
+p.date {
+  font-style: italic;
+  margin: 0 0 5px 0;
+}
 #container {
-  width: 600px;
+  width: 660px;
   margin: 0 auto;
 }
 body > header {
-  border-bottom: 2px solid #ff0000;
-  /*background: #ff0000;*/
-  height: 72px;
+  background: #B83F5F;
+  text-align: center;
+  border-bottom: 8px solid #efefef;
 }
 #container div {
-  margin: 50px 0 30px 0;
+  margin: 50px 0;
+  padding: 30px;
+  background: #efefef;
+}
+div p.comment {
+  font-size: 0.9em;
+}
+h1 {
+  margin: 0;
+  color: #ffffff;
+  padding: 20px 0;
+  font-size: 3em;
 }
