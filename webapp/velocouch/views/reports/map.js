@@ -1,3 +1,5 @@
 function(doc) {
-    emit(doc._id, doc);
+    if (doc.timestamp) {
+        emit(doc.timestamp, null);
+    }
 }
